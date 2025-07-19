@@ -14,16 +14,15 @@ function addTask(title, category, userId) {
 
 function viewTasks(userId) {
   const userTasks = state.tasks.filter(t => t.userId === userId);
-  if (userTasks.length === 0) {
-    console.log('No tasks found for this user.');
-  } else {
-    userTasks.forEach((task, i) => {
-      console.log(
-        `${i+1}. [${task.completed ? '✔' : ' '}] ` +
-        `${task.title} | Category: ${task.category}`
-      );
-    });
+  if (!userTasks.length) {
+    console.log('No tasks for this user.');
+    return;
   }
+  userTasks.forEach((t, i) => {
+    console.log(
+      `${i+1}. [${t.completed ? '✔' : ' '}] ${t.title} | Category: ${t.category}`
+    );
+  });
 }
 
 function getAllTasks() {
@@ -33,23 +32,45 @@ function getAllTasks() {
 async function completeTask(userId, prompt) {
   const userTasks = state.tasks.filter(t => t.userId === userId);
   if (!userTasks.length) {
-    console.log('No tasks found for this user.');
+    console.log('No tasks for this user.');
     return;
   }
   userTasks.forEach((t, i) => {
     console.log(
-      `${i+1}. [${t.completed ? '✔' : ' '}] ` +
-      `${t.title} | Category: ${t.category}`
+      `${i+1}. [${t.completed ? '✔' : ' '}] ${t.title} | Category: ${t.category}`
     );
   });
-  const idx = parseInt(await prompt('Enter task number to mark as completed: '),10) -1;
+  const idx = parseInt(await prompt('Task # to complete: '), 10) - 1;
   if (idx >= 0 && idx < userTasks.length) {
     userTasks[idx].completed = true;
     save();
-    console.log('Task marked as completed.');
+    console.log('Task marked completed.');
   } else {
-    console.log('Invalid task number.');
+    console.log('Invalid number.');
   }
 }
 
-module.exports = { addTask, viewTasks, getAllTasks, completeTask };
+async function deleteTask(userId, prompt) {
+  const userTasks = state.tasks.filter(t => t.userId === userId);
+  if (!userTasks.length) {
+    console.log('No tasks for this user.');
+    return;
+  }
+  userTasks.forEach((t, i) => {
+    console.log(
+      `${i+1}. [${t.completed ? '✔' : ' '}] ${t.title} | Category: ${t.category}`
+    );
+  });
+  const idx = parseInt(await prompt('Task # to delete: '), 10) - 1;
+  if (idx >= 0 && idx < userTasks.length) {
+    const taskToDelete = userTasks[idx];
+    const globalIdx = state.tasks.findIndex(t => t.id === taskToDelete.id);
+    state.tasks.splice(globalIdx, 1);
+    save();
+    console.log('Task deleted.');
+  } else {
+    console.log('Invalid number.');
+  }
+}
+
+module.exports = { addTask, viewTasks, getAllTasks, completeTask, deleteTask };
