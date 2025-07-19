@@ -1,24 +1,17 @@
-const { db } = require('./db');
+const { state, save } = require('./data');
 
-async function login(prompt) {
-  const username = await prompt('Enter your username: ');
-
-  return new Promise((resolve, reject) => {
-    db.get(`SELECT id FROM users WHERE username = ?`, [username], (err, row) => {
-      if (err) return reject(err);
-
-      if (row) {
-        console.log(`Welcome back, ${username}!`);
-        resolve({ id: row.id, username });
-      } else {
-        db.run(`INSERT INTO users (username) VALUES (?)`, [username], function (err) {
-          if (err) return reject(err);
-          console.log(`New user created. Welcome, ${username}!`);
-          resolve({ id: this.lastID, username });
-        });
-      }
-    });
-  });
+function addUser(username) {
+  if (state.users.find(u => u.username === username)) {
+    console.log('Username already exists.');
+    return;
+  }
+  state.users.push({ id: state.nextUserId++, username });
+  save();
+  console.log(`User '${username}' added.`);
 }
 
-module.exports = { login };
+function getAllUsers() {
+  return state.users;
+}
+
+module.exports = { addUser, getAllUsers };
